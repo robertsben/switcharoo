@@ -1,5 +1,9 @@
 package main
 
+import (
+	"encoding/xml"
+)
+
 type Attribute struct {
 	Label 	string
 	Value 	string
