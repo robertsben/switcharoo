@@ -24,7 +24,7 @@ var templates = template.Must(template.ParseFiles("index.html", "output.html"))
 
 func conversionHandler(w http.ResponseWriter, r *http.Request) {
 	document := r.FormValue("document")
-	NewDecoder(bytes.NewBufferString(document)).Decode(&Node{})
+	NewDecoder(bytes.NewBufferString(document)).Decode(&Element{})
 	data_out := &Data{Conversion: []byte(document)}
 	renderTemplate(w, "output", data_out)
 }

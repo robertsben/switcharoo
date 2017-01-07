@@ -5,6 +5,7 @@ import (
 	"io"
 	// "fmt"
 	"github.com/davecgh/go-spew/spew"
+	"strings"
 )
 
 // <tree.go>
@@ -16,30 +17,26 @@ type Attribute struct {
 
 type Attributes []*Attribute
 
-func (self *Element) AddAttribute(attr xml.Attr) {
-	self.Attrs = append(self.Attrs, &Attribute{Label: attr.Name.Local, Value: attr.Value})
-}
-
-type Node struct {
-	Children 	Nodes
-	Label		string
-}
-
-type Nodes []*Node
-
-func (self *Node) AddChild(child *Node) {
-	self.Children = append(self.Children, child)
-}
-
 type Element struct {
-	Parent		*Node
-	Self 		*Node
+	Parent		*Element
+	Children 	Elements
+	Label 		string
 	Attrs		Attributes
 	Data 		string
 }
 
+type Elements []*Element
+
+func (self *Element) AddAttribute(attr xml.Attr) {
+	self.Attrs = append(self.Attrs, &Attribute{Label: attr.Name.Local, Value: attr.Value})
+}
+
+func (self *Element) AddChild(child *Element) {
+	self.Children = append(self.Children, child)
+}
+
 func (self *Element) AddSelfToParentsChildren() {
-	self.Parent.AddChild(self.Self)
+	self.Parent.AddChild(self)
 }
 
 // </tree.go>
@@ -55,13 +52,9 @@ func NewDecoder(r io.Reader) *Decoder {
 	return &Decoder{r: r}
 }
 
-func (dec *Decoder) Decode(root *Node) error {
+func (dec *Decoder) Decode(root *Element) error {
 	decoder := xml.NewDecoder(dec.r)
-
-	element := &Element{
-		Parent: nil,
-		Self: root,
-	}
+	element := root
 
 	for {
 		token, _ := decoder.Token()
@@ -74,15 +67,17 @@ func (dec *Decoder) Decode(root *Node) error {
 
 		case xml.StartElement:
 			element = &Element{
-				Parent: element.Self,
-				Self: &Node{Label: curr_tok.Name.Local},
+				Parent: element,
+				Label: curr_tok.Name.Local,
 			}
 			for _, attr := range curr_tok.Attr {
 				element.AddAttribute(attr)
 			}
 			element.AddSelfToParentsChildren()
+
 		case xml.CharData:
-			element.Data = string(curr_tok)
+			spew.Dump(parseCharToken(string(xml.CharData(curr_tok))))
+			element.Data = parseCharToken(string(xml.CharData(curr_tok)))
 		case xml.EndElement:
 			element = element.Parent
 		}
@@ -90,4 +85,8 @@ func (dec *Decoder) Decode(root *Node) error {
 	}
 	spew.Dump(root)
 	return nil
+}
+
+func parseCharToken(charTok string) string {
+	return strings.TrimSpace(charTok)
 }
