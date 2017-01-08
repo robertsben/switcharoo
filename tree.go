@@ -32,3 +32,23 @@ func (self *Element) AddChild(child *Element) {
 func (self *Element) AddSelfToParentsChildren() {
 	self.Parent.AddChild(self)
 }
+
+func (self *Element) HasChild() bool {
+	return len(self.Children) > 0
+}
+
+func (self *Element) HasData() bool {
+	return len(self.Data) > 0
+}
+
+func (self *Element) HasAttrs() bool {
+	return len(self.Attrs) > 0
+}
+
+func (self *Element) HasAttrsAndData() bool {
+	return self.HasAttrs() && self.HasData()
+}
+
+func (self *Element) HasAttrsAndChild() bool {
+	return self.HasAttrs() && self.HasChild()
+}
