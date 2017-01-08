@@ -41,8 +41,8 @@ func (dec *Decoder) Decode(root *Element) error {
 			element.AddSelfToParentsChildren()
 
 		case xml.CharData:
-			spew.Dump(parseCharToken(string(xml.CharData(curr_tok))))
-			element.Data = parseCharToken(string(xml.CharData(curr_tok)))
+			spew.Dump(sanitiseData(string(xml.CharData(curr_tok))))
+			element.Data = sanitiseData(string(xml.CharData(curr_tok)))
 		case xml.EndElement:
 			element = element.Parent
 		}
@@ -52,6 +52,8 @@ func (dec *Decoder) Decode(root *Element) error {
 	return nil
 }
 
-func parseCharToken(charTok string) string {
-	return strings.TrimSpace(charTok)
+func sanitiseData(charTok string) string {
+	charTok = strings.TrimSpace(charTok)
+	charTok = strings.Replace(charTok, "\"", "\\\"", -1)
+	return charTok
 }
