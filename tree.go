@@ -13,7 +13,7 @@ type Attributes []*Attribute
 
 type Element struct {
 	Parent		*Element
-	Children 	Elements
+	Children 	map[string]Elements
 	Label 		string
 	Attrs		Attributes
 	Data 		string
@@ -26,11 +26,18 @@ func (self *Element) AddAttribute(attr xml.Attr) {
 }
 
 func (self *Element) AddChild(child *Element) {
-	self.Children = append(self.Children, child)
+	if nil == self.Children {
+		self.Children = make(map[string]Elements)
+	}
+	self.Children[child.Label] = append(self.Children[child.Label], child)
 }
 
 func (self *Element) AddSelfToParentsChildren() {
 	self.Parent.AddChild(self)
+}
+
+func (self *Element) IsRoot() bool {
+	return self.Parent == nil
 }
 
 func (self *Element) HasChild() bool {
@@ -51,4 +58,8 @@ func (self *Element) HasAttrsAndData() bool {
 
 func (self *Element) HasAttrsAndChild() bool {
 	return self.HasAttrs() && self.HasChild()
+}
+
+func (self *Element) HasLikeSiblings() bool {
+	return len(self.Parent.Children[self.Label]) > 1
 }

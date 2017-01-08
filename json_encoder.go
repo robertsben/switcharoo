@@ -42,26 +42,52 @@ func (enc *Encoder) generateJsonFromElement(elem *Element) {
 	if elem.HasAttrsAndChild() {
 		enc.generateAttrsAndChildrenJson(elem)
 	} else if elem.HasAttrsAndData() {
-		enc.generateAttrsAndDataJson(elem.Attrs, elem.Data)
+		enc.generateAttrsAndDataJson(elem)
 	} else if elem.HasAttrs() {
+		if !elem.HasLikeSiblings() {
+			enc.generateLabelJson(elem.Label)
+		}
+		enc.write("{\n")
 		enc.generateAttrsJson(elem.Attrs)
+		enc.write("\n}")
 	} else if elem.HasData() {
+		if !elem.HasLikeSiblings() {
+			enc.generateLabelJson(elem.Label)
+		}
 		enc.generateDataJson(elem.Data)
-	}
-
-	if elem.HasChild() {
+	} else if elem.HasChild() {
+		if !elem.IsRoot() {
+			enc.generateLabelJson(elem.Label)
+		}
+		enc.write("{\n")
 		enc.generateChildrenJson(elem)
+		enc.write("\n}")
 	}
 }
 
 func (enc *Encoder) generateChildrenJson(elem *Element) {
-	for index, elem := range elem.Children {
-		enc.generateLabelJson(elem.Label)
-		enc.generateJsonFromElement(elem)
-		if index != len(elem.Children)-1 {
+	for index, siblings := range elem.Children {
+		if len(siblings) > 1 {
+			enc.generateLabelJson(index)
+			enc.generateLikeSiblingsJson(siblings)	
+		} else {
+			enc.generateJsonFromElement(siblings[0])
+		}
+		
+	}
+}
+
+func (enc *Encoder) generateLikeSiblingsJson(siblings Elements) {
+	enc.write("[\n")
+	for index, sibling := range siblings {
+		enc.generateJsonFromElement(sibling)
+		if index != (len(siblings)-1) {
+			spew.Dump(index)
+			spew.Dump(len(siblings))
 			enc.appendComma()
 		}
 	}
+	enc.write("]\n")
 }
 
 func (enc *Encoder) generateLabelJson(label string) {
@@ -91,7 +117,9 @@ func (enc *Encoder) generateAttrsJson(attrs Attributes) {
 }
 
 func (enc *Encoder) generateAttrsAndChildrenJson(elem *Element) {
-	enc.generateLabelJson(elem.Label)
+	if !elem.HasLikeSiblings() {
+		enc.generateLabelJson(elem.Label)
+	}
 	enc.write("{\n")
 	enc.generateAttrsJson(elem.Attrs)
 	enc.appendComma()
@@ -99,9 +127,14 @@ func (enc *Encoder) generateAttrsAndChildrenJson(elem *Element) {
 	enc.write("\n}")
 }
 
-func (enc *Encoder) generateAttrsAndDataJson(attrs Attributes, data string) {
+func (enc *Encoder) generateAttrsAndDataJson(elem *Element) {
+	if !elem.HasLikeSiblings() {
+		enc.generateLabelJson(elem.Label)
+	}
+	enc.write("{\n")
 	enc.generateLabelJson("#text")
-	enc.generateDataJson(data)
+	enc.generateDataJson(elem.Data)
 	enc.appendComma()
-	enc.generateAttrsJson(attrs)
+	enc.generateAttrsJson(elem.Attrs)
+	enc.write("\n}")
 }
