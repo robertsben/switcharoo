@@ -56,7 +56,7 @@ func (enc *Encoder) generateJsonFromElement(elem *Element) {
 		}
 		enc.generateDataJson(elem.Data)
 	} else if elem.HasChild() {
-		if !elem.IsRoot() {
+		if !elem.IsRoot() && !elem.HasLikeSiblings() {
 			enc.generateLabelJson(elem.Label)
 		}
 		enc.write("{\n")
@@ -73,11 +73,11 @@ func (enc *Encoder) generateChildrenJson(elem *Element) {
 			enc.generateLikeSiblingsJson(siblings)	
 		} else {
 			enc.generateJsonFromElement(siblings[0])
-			if count != (len(elem.Children)-1) {
-				spew.Dump(index)
-				spew.Dump(len(elem.Children))
-				enc.appendComma()
-			}
+		}
+		if count != (len(elem.Children)-1) {
+			spew.Dump(index)
+			spew.Dump(len(elem.Children))
+			enc.appendComma()
 		}
 		count++
 	}
