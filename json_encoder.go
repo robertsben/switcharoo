@@ -49,31 +49,68 @@ func (enc *Encoder) Encode(root *Element) error {
 }
 
 func (enc *Encoder) generateJsonFromElement(elem *Element) {
+	switch {
 
-	if elem.HasAttrsAndChild() {
+	case elem.HasAttrsAndChild():
 		enc.generateAttrsAndChildrenJson(elem)
-	} else if elem.HasAttrsAndData() {
+
+	case elem.HasAttrsAndData():
 		enc.generateAttrsAndDataJson(elem)
-	} else if elem.HasAttrs() {
-		if !elem.HasLikeSiblings() {
-			enc.generateLabelJson(elem.Label)
-		}
-		enc.write("{\n")
-		enc.generateAttrsJson(elem.Attrs)
-		enc.write("\n}")
-	} else if elem.HasData() {
-		if !elem.HasLikeSiblings() {
-			enc.generateLabelJson(elem.Label)
-		}
+
+	case elem.HasAttrs():
+		enc.generateWrappedAttrsJson(elem)
+
+	case elem.HasData():
+		enc.generateLabelJsonIfWithoutLikeSiblings(elem)
 		enc.generateDataJson(elem.Data)
-	} else if elem.HasChild() {
-		if !elem.IsRoot() && !elem.HasLikeSiblings() {
-			enc.generateLabelJson(elem.Label)
-		}
-		enc.write("{\n")
-		enc.generateChildrenJson(elem)
-		enc.write("\n}")
+
+	case elem.HasChild():
+		enc.generateWrappedChildrenJson(elem)
+
 	}
+
+}
+
+func (enc *Encoder) generateAttrsAndChildrenJson(elem *Element) {
+	enc.startJsonObjectWithLabelIfNeeded(elem)
+	enc.generateAttrsJson(elem.Attrs)
+	enc.appendComma()
+	enc.generateChildrenJson(elem)
+	enc.endJsonObject()
+}
+
+func (enc *Encoder) generateAttrsAndDataJson(elem *Element) {
+	enc.startJsonObjectWithLabelIfNeeded(elem)
+	enc.generateLabelJson("#text")
+	enc.generateDataJson(elem.Data)
+	enc.appendComma()
+	enc.generateAttrsJson(elem.Attrs)
+	enc.endJsonObject()
+}
+
+func (enc *Encoder) generateWrappedAttrsJson(elem *Element) {
+	enc.startJsonObjectWithLabelIfNeeded(elem)
+	enc.generateAttrsJson(elem.Attrs)
+	enc.endJsonObject()
+}
+
+func (enc *Encoder) generateAttrsJson(attrs Attributes) {
+	for index, attr := range attrs {
+		enc.generateLabelJson("-" + attr.Label)
+		enc.generateDataJson(attr.Value)
+		if index != len(attrs)-1 {
+			enc.appendComma()
+		}
+	}
+}
+
+func (enc *Encoder) generateWrappedChildrenJson(elem *Element) {
+	if !elem.IsRoot() {
+		enc.startJsonObjectWithLabelIfNeeded(elem)
+	}
+	enc.startJsonObject()
+	enc.generateChildrenJson(elem)
+	enc.endJsonObject()
 }
 
 func (enc *Encoder) generateChildrenJson(elem *Element) {
@@ -103,6 +140,17 @@ func (enc *Encoder) generateLikeSiblingsJson(siblings Elements) {
 	enc.write("]\n")
 }
 
+func (enc *Encoder) startJsonObjectWithLabelIfNeeded(elem *Element) {
+	enc.generateLabelJsonIfWithoutLikeSiblings(elem)
+	enc.startJsonObject()
+}
+
+func (enc *Encoder) generateLabelJsonIfWithoutLikeSiblings(elem *Element) {
+	if !elem.HasLikeSiblings() {
+		enc.generateLabelJson(elem.Label)
+	}
+}
+
 func (enc *Encoder) generateLabelJson(label string) {
 	enc.write("\"")
 	enc.write(label)
@@ -115,39 +163,14 @@ func (enc *Encoder) generateDataJson(data string) {
 	enc.write("\"")
 }
 
+func (enc *Encoder) startJsonObject() {
+	enc.write("{\n")
+}
+
+func (enc *Encoder) endJsonObject() {
+	enc.write("\n}")
+}
+
 func (enc *Encoder) appendComma() {
 	enc.write(",\n")
-}
-
-func (enc *Encoder) generateAttrsJson(attrs Attributes) {
-	for index, attr := range attrs {
-		enc.generateLabelJson("-" + attr.Label)
-		enc.generateDataJson(attr.Value)
-		if index != len(attrs)-1 {
-			enc.appendComma()
-		}
-	}
-}
-
-func (enc *Encoder) generateAttrsAndChildrenJson(elem *Element) {
-	if !elem.HasLikeSiblings() {
-		enc.generateLabelJson(elem.Label)
-	}
-	enc.write("{\n")
-	enc.generateAttrsJson(elem.Attrs)
-	enc.appendComma()
-	enc.generateChildrenJson(elem)
-	enc.write("\n}")
-}
-
-func (enc *Encoder) generateAttrsAndDataJson(elem *Element) {
-	if !elem.HasLikeSiblings() {
-		enc.generateLabelJson(elem.Label)
-	}
-	enc.write("{\n")
-	enc.generateLabelJson("#text")
-	enc.generateDataJson(elem.Data)
-	enc.appendComma()
-	enc.generateAttrsJson(elem.Attrs)
-	enc.write("\n}")
 }

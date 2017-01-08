@@ -22,13 +22,11 @@ type Data struct {
 var Debug bool
 
 var templates = template.Must(template.ParseFiles("index.html", "output.html"))
-// var validPath = regexp.MustCompile("^/(edit|save|view)/([a-zA-Z0-9]+)$")
-
 
 func conversionHandler(w http.ResponseWriter, r *http.Request) {
 	document := r.FormValue("document")
-
 	output, err := Convert(document)
+
 	if err != nil {
 		renderTemplate(w, "output", &Data{Conversion: []byte(err.Error())})
 	} else {
@@ -39,6 +37,7 @@ func conversionHandler(w http.ResponseWriter, r *http.Request) {
 
 func renderTemplate(w http.ResponseWriter, tmpl string, data *Data) {
 	err := templates.ExecuteTemplate(w, tmpl + ".html", data) 
+
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
         return
@@ -52,10 +51,11 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 func fileConversionHandler(inputfilename string, outputfilename string) {
 	input, _ := ioutil.ReadFile(inputfilename)
 	output, err := Convert(string(input))
+
 	if err == nil {
 		ioutil.WriteFile(outputfilename, []byte(err.Error()), 0644)
 	} else {
-		ioutil.WriteFile(outputfilename, output.Bytes(), 0644)	
+		ioutil.WriteFile(outputfilename, output.Bytes(), 0644)
 	}
 }
 
