@@ -106,7 +106,7 @@ func (enc *Encoder) generateAttrsJson(attrs Attributes) {
 
 func (enc *Encoder) generateWrappedChildrenJson(elem *Element) {
 	if !elem.IsRoot() {
-		enc.startJsonObjectWithLabelIfNeeded(elem)
+		enc.generateLabelJsonIfWithoutLikeSiblings(elem)
 	}
 	enc.startJsonObject()
 	enc.generateChildrenJson(elem)

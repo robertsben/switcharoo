@@ -7,6 +7,7 @@ import (
 	"html/template"
 	"io/ioutil"
 	"net/http"
+	"github.com/davecgh/go-spew/spew"
 	// "regexp"
 )
 
@@ -52,7 +53,10 @@ func fileConversionHandler(inputfilename string, outputfilename string) {
 	input, _ := ioutil.ReadFile(inputfilename)
 	output, err := Convert(string(input))
 
-	if err == nil {
+	if err != nil {
+		if Debug {
+			spew.Dump(err)
+		}
 		ioutil.WriteFile(outputfilename, []byte(err.Error()), 0644)
 	} else {
 		ioutil.WriteFile(outputfilename, output.Bytes(), 0644)
