@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"io"
 	"github.com/davecgh/go-spew/spew"
 )
@@ -18,6 +19,12 @@ func (enc *Encoder) write(s string) {
 	enc.w.Write([]byte(s))
 }
 
+func IsValidJSON(s string) bool {
+	var js map[string]interface{}
+	return json.Unmarshal([]byte(s), &js) == nil
+
+}
+
 func (enc *Encoder) Encode(root *Element) error {
 	if enc.err != nil {
 		return enc.err
@@ -27,11 +34,15 @@ func (enc *Encoder) Encode(root *Element) error {
 		return nil
 	}
 
-	spew.Dump(root)
+	if Debug {
+		spew.Dump(root)
+	}
 
 	enc.generateJsonFromElement(root)
 
-	spew.Dump(enc)
+	if Debug {
+		spew.Dump(enc)
+	}
 
 	return nil
 
@@ -75,8 +86,6 @@ func (enc *Encoder) generateChildrenJson(elem *Element) {
 			enc.generateJsonFromElement(siblings[0])
 		}
 		if count != (len(elem.Children)-1) {
-			spew.Dump(index)
-			spew.Dump(len(elem.Children))
 			enc.appendComma()
 		}
 		count++
@@ -88,8 +97,6 @@ func (enc *Encoder) generateLikeSiblingsJson(siblings Elements) {
 	for index, sibling := range siblings {
 		enc.generateJsonFromElement(sibling)
 		if index != (len(siblings)-1) {
-			spew.Dump(index)
-			spew.Dump(len(siblings))
 			enc.appendComma()
 		}
 	}

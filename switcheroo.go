@@ -1,10 +1,11 @@
 package main
 
 import (
-	"bytes"
 	// "errors"
 	// "encoding/xml"
+	"flag"
 	"html/template"
+	"io/ioutil"
 	"net/http"
 	// "regexp"
 )
@@ -18,18 +19,22 @@ type Data struct {
 	Conversion []byte
 }
 
+var Debug bool
+
 var templates = template.Must(template.ParseFiles("index.html", "output.html"))
 // var validPath = regexp.MustCompile("^/(edit|save|view)/([a-zA-Z0-9]+)$")
 
 
 func conversionHandler(w http.ResponseWriter, r *http.Request) {
 	document := r.FormValue("document")
-	root := &Element{}
-	NewDecoder(bytes.NewBufferString(document)).Decode(root)
-	output := new(bytes.Buffer)
-	NewEncoder(output).Encode(root)
-	data_out := &Data{Conversion: []byte(document)}
-	renderTemplate(w, "output", data_out)
+
+	output, err := Convert(document)
+	if err != nil {
+		renderTemplate(w, "output", &Data{Conversion: []byte(err.Error())})
+	} else {
+		data_out := &Data{Conversion: output.Bytes()}
+		renderTemplate(w, "output", data_out)
+	}
 }
 
 func renderTemplate(w http.ResponseWriter, tmpl string, data *Data) {
@@ -44,10 +49,33 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	renderTemplate(w, "index", &Data{})
 }
 
+func fileConversionHandler(inputfilename string, outputfilename string) {
+	input, _ := ioutil.ReadFile(inputfilename)
+	output, err := Convert(string(input))
+	if err == nil {
+		ioutil.WriteFile(outputfilename, []byte(err.Error()), 0644)
+	} else {
+		ioutil.WriteFile(outputfilename, output.Bytes(), 0644)	
+	}
+}
+
 func main() {
-	http.HandleFunc("/", indexHandler)
-	http.HandleFunc("/convert", conversionHandler)
-	// http.HandleFunc("/edit/", makeHandler(editHandler))
-	// http.HandleFunc("/save/", makeHandler(saveHandler))
-	http.ListenAndServe(":8080", nil)
+	var source string
+	var destination string
+	flag.StringVar(&source, "source", "", "path to the source xml file")
+	flag.StringVar(&destination, "destination", "./example.json", "path to the output json file")
+	flag.BoolVar(&Debug, "debug", false, "whether to add debugging logs")
+	flag.Parse()
+
+	if len(source) < 1 {
+		http.HandleFunc("/", indexHandler)
+		http.HandleFunc("/convert", conversionHandler)
+		http.ListenAndServe(":8080", nil)
+	} else {
+		fileConversionHandler(source, destination)
+	}
+
+
+
+
 }
