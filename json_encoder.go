@@ -66,14 +66,20 @@ func (enc *Encoder) generateJsonFromElement(elem *Element) {
 }
 
 func (enc *Encoder) generateChildrenJson(elem *Element) {
+	count := 0
 	for index, siblings := range elem.Children {
 		if len(siblings) > 1 {
 			enc.generateLabelJson(index)
 			enc.generateLikeSiblingsJson(siblings)	
 		} else {
 			enc.generateJsonFromElement(siblings[0])
+			if count != (len(elem.Children)-1) {
+				spew.Dump(index)
+				spew.Dump(len(elem.Children))
+				enc.appendComma()
+			}
 		}
-		
+		count++
 	}
 }
 
