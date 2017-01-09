@@ -5,7 +5,6 @@ import (
 	"io"
 	// "fmt"
 	"github.com/davecgh/go-spew/spew"
-	"strings"
 )
 
 type Decoder struct {
@@ -26,7 +25,9 @@ func (dec *Decoder) Decode(root *Element) error {
 		if token == nil {
 			break
 		}
-		spew.Dump(token)
+		if Debug {
+			spew.Dump(token)
+		}
 
 		switch curr_tok := token.(type) {
 
@@ -41,17 +42,19 @@ func (dec *Decoder) Decode(root *Element) error {
 			element.AddSelfToParentsChildren()
 
 		case xml.CharData:
-			spew.Dump(parseCharToken(string(xml.CharData(curr_tok))))
-			element.Data = parseCharToken(string(xml.CharData(curr_tok)))
+			if Debug{
+				spew.Dump(SanitiseData(string(xml.CharData(curr_tok))))
+			}
+			element.Data = SanitiseData(string(xml.CharData(curr_tok)))
+
 		case xml.EndElement:
 			element = element.Parent
 		}
 			
 	}
-	spew.Dump(root)
+	if Debug {
+		spew.Dump(root)
+	}
 	return nil
 }
 
-func parseCharToken(charTok string) string {
-	return strings.TrimSpace(charTok)
-}
