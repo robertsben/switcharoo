@@ -40,6 +40,10 @@ func (self *Element) IsRoot() bool {
 	return self.Parent == nil
 }
 
+func (self *Element) IsEmptyField() bool {
+	return !self.IsRoot() && !self.HasChild() && !self.HasData() && !self.HasAttrs()
+}
+
 func (self *Element) HasChild() bool {
 	return len(self.Children) > 0
 }

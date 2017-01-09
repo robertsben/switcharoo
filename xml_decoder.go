@@ -46,6 +46,7 @@ func (dec *Decoder) Decode(root *Element) error {
 				spew.Dump(SanitiseData(string(xml.CharData(curr_tok))))
 			}
 			element.Data = SanitiseData(string(xml.CharData(curr_tok)))
+
 		case xml.EndElement:
 			element = element.Parent
 		}

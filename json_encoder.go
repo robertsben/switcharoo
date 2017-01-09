@@ -64,6 +64,10 @@ func (enc *Encoder) generateJsonFromElement(elem *Element) {
 		enc.generateLabelJsonIfWithoutLikeSiblings(elem)
 		enc.generateDataJson(elem.Data)
 
+	case elem.IsEmptyField():
+		enc.generateLabelJsonIfWithoutLikeSiblings(elem)
+		enc.write("null")
+
 	case elem.HasChild():
 		enc.generateWrappedChildrenJson(elem)
 
