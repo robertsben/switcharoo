@@ -61,5 +61,6 @@ func (dec *Decoder) Decode(root *Element) error {
 func sanitiseData(charTok string) string {
 	charTok = strings.TrimSpace(charTok)
 	charTok = strings.Replace(charTok, "\"", "\\\"", -1)
+	charTok = strings.Replace(charTok, "\n", "\\n", -1)
 	return charTok
 }

@@ -21,6 +21,7 @@ type Data struct {
 }
 
 var Debug bool
+var DumpFail bool
 
 var templates = template.Must(template.ParseFiles("index.html", "output.html"))
 
@@ -57,6 +58,9 @@ func fileConversionHandler(inputfilename string, outputfilename string) {
 		if Debug {
 			spew.Dump(err)
 		}
+		if DumpFail {
+			ioutil.WriteFile("./failure.json", output.Bytes(), 0644)	
+		}
 		ioutil.WriteFile(outputfilename, []byte(err.Error()), 0644)
 	} else {
 		ioutil.WriteFile(outputfilename, output.Bytes(), 0644)
@@ -69,6 +73,7 @@ func main() {
 	flag.StringVar(&source, "source", "", "path to the source xml file")
 	flag.StringVar(&destination, "destination", "./example.json", "path to the output json file")
 	flag.BoolVar(&Debug, "debug", false, "whether to add debugging logs")
+	flag.BoolVar(&DumpFail, "dumpfail", true, "whether to write failed conversion to failure.json")
 	flag.Parse()
 
 	if len(source) < 1 {

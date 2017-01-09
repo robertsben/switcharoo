@@ -1,4 +1,4 @@
-example.json
-example.xml
+*.json
+*.xml
 switcheroo
 .DS_Store
