@@ -5,7 +5,6 @@ import (
 	"io"
 	// "fmt"
 	"github.com/davecgh/go-spew/spew"
-	"strings"
 )
 
 type Decoder struct {
@@ -44,9 +43,9 @@ func (dec *Decoder) Decode(root *Element) error {
 
 		case xml.CharData:
 			if Debug{
-				spew.Dump(sanitiseData(string(xml.CharData(curr_tok))))
+				spew.Dump(SanitiseData(string(xml.CharData(curr_tok))))
 			}
-			element.Data = sanitiseData(string(xml.CharData(curr_tok)))
+			element.Data = SanitiseData(string(xml.CharData(curr_tok)))
 		case xml.EndElement:
 			element = element.Parent
 		}
@@ -58,9 +57,3 @@ func (dec *Decoder) Decode(root *Element) error {
 	return nil
 }
 
-func sanitiseData(charTok string) string {
-	charTok = strings.TrimSpace(charTok)
-	charTok = strings.Replace(charTok, "\"", "\\\"", -1)
-	charTok = strings.Replace(charTok, "\n", "\\n", -1)
-	return charTok
-}

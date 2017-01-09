@@ -22,7 +22,7 @@ type Element struct {
 type Elements []*Element
 
 func (self *Element) AddAttribute(attr xml.Attr) {
-	self.Attrs = append(self.Attrs, &Attribute{Label: attr.Name.Local, Value: attr.Value})
+	self.Attrs = append(self.Attrs, &Attribute{Label: attr.Name.Local, Value: SanitiseData(string(attr.Value))})
 }
 
 func (self *Element) AddChild(child *Element) {
