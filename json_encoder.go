@@ -166,6 +166,14 @@ func (enc *Encoder) generateLabelJson(label string) {
 }
 
 func (enc *Encoder) generateDataJson(data string) {
+	if IsString(data) {
+		enc.generateWrappedDataJson(data)
+	} else {
+		enc.write(data)
+	}
+}
+
+func (enc *Encoder) generateWrappedDataJson(data string) {
 	enc.write("\"")
 	enc.write(data)
 	enc.write("\"")
