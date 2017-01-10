@@ -6,6 +6,8 @@ import (
 	"github.com/davecgh/go-spew/spew"
 )
 
+var Indent int
+
 type Encoder struct {
 	w 	io.Writer
 	err	error
@@ -37,6 +39,8 @@ func (enc *Encoder) Encode(root *Element) error {
 	if Debug {
 		spew.Dump(root)
 	}
+
+	Indent = 0
 
 	enc.generateJsonFromElement(root)
 
@@ -134,14 +138,14 @@ func (enc *Encoder) generateChildrenJson(elem *Element) {
 }
 
 func (enc *Encoder) generateLikeSiblingsJson(siblings Elements) {
-	enc.write("[\n")
+	enc.write("[")
 	for index, sibling := range siblings {
 		enc.generateJsonFromElement(sibling)
 		if index != (len(siblings)-1) {
 			enc.appendComma()
 		}
 	}
-	enc.write("]\n")
+	enc.write("]")
 }
 
 func (enc *Encoder) startJsonObjectWithLabelIfNeeded(elem *Element) {
@@ -169,12 +173,24 @@ func (enc *Encoder) generateDataJson(data string) {
 
 func (enc *Encoder) startJsonObject() {
 	enc.write("{\n")
+	Indent++
+	enc.indent(Indent)
 }
 
 func (enc *Encoder) endJsonObject() {
-	enc.write("\n}")
+	Indent--
+	enc.write("\n")
+	enc.indent(Indent)
+	enc.write("}")
 }
 
 func (enc *Encoder) appendComma() {
 	enc.write(",\n")
+	enc.indent(Indent)
+}
+
+func (enc *Encoder) indent(level int) {
+	for i := 0; i < level; i++ {
+		enc.write("\t")
+	}
 }
