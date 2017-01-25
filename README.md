@@ -1,4 +1,4 @@
-# Switcheroo
+# Switcharoo
 
 ## Concept
 
@@ -8,9 +8,9 @@ A package to convert data notation types.
 
 Initialise from the command line:
 ```
-go install github.com/robertsben/switcheroo
+go install github.com/robertsben/switcharoo
 
-./switcheroo -source {relative/path/to/source-file.xml} -destination {relative/path/to/destination-file.json} -debug
+./switcharoo -source {relative/path/to/source-file.xml} -destination {relative/path/to/destination-file.json} -debug
 ```
 
 Debug is optional. Source and destination are also optional, if you're happy to use the... somewhat shoddy... web app [on localhost:8080](http://localhost:8080).
