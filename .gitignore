@@ -2,3 +2,4 @@
 *.xml
 switcheroo
 .DS_Store
+.idea
